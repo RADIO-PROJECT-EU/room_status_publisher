@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<launch>
+    <master auto="start"/>
+
+    <node pkg="room_status_publisher" type="room_status.py" respawn="false" name="room_status_publisher" output="screen">
+        <rosparam file="$(find room_status_publisher)/config/parameters.yaml" command="load" />
+    </node>
+</launch>

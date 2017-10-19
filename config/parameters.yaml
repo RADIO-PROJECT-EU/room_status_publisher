@@ -1,0 +1,5 @@
+sub_topic: "apps/localization/relative"
+pub_topic: "room_status_publisher/room_status"
+tv_topic: "room_status_publisher/tv_chair"
+chair_object_name: "chair"
+chair_tv_location: "living_room"
