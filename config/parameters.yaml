@@ -1,5 +1,5 @@
-tv_topic: "apps/localization/relative"
-keys_topic: "apps/localization/keys"
+tv_topic: "tw_watching"
+keys_topic: "keys_tracking"
 pub_topic: "room_status_publisher/room_status"
 tv_pub_topic: "room_status_publisher/tv_chair"
 keys_pub_topic: "room_status_publisher/keys_location"
