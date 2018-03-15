@@ -1,11 +1,14 @@
 #!/usr/bin/python
 import json
 import rospy
+import rospkg
+from datetime import datetime
 from std_msgs.msg import Bool
 import paho.mqtt.client as mqtt
 from geometry_msgs.msg import PoseStamped
 from room_status_publisher.msg import RoomStatusMsg
 
+path = ""
 stopic = ""
 s2topic = ""
 tv_pub = None
@@ -13,6 +16,7 @@ ros_pub = None
 keys_goal_pub = None
 chair_tv_location = ""
 chair_object_name = ""
+write_to_file = False
 
 def on_connect(client, userdata, flags, rc):
     global stopic, s2topic
@@ -29,6 +33,7 @@ def on_subscribe(mosq, obj, mid, granted_qos):
 
 def tv_callback(client, userdata, msg):
     global ros_pub, tv_pub, chair_object_name, chair_tv_location
+    global path, write_to_file
     j = json.loads(msg.payload)
     b = Bool()
     if j["object"].lower() == chair_object_name and j["location"].lower() == chair_tv_location:
@@ -37,11 +42,17 @@ def tv_callback(client, userdata, msg):
         b.data = False
 
     tv_pub.publish(b)
+    if write_to_file:
+        with open(path+"tv.log", "ab+") as f:
+            dt = datetime.now()
+            f.write(j["object"] + "," + j["location"] + "," + datetime.today().strftime("%d-%m-%Y")+'_'+dt.strftime("%H%M%S%f")+"\n")
+        
 
 def keys_callback(client, userdata, msg):
     global keys_goal_pub, keys_location1, keys_location2
     global location1x, location1y, location1z, location1w
     global location2x, location2y, location2z, location2w
+    global write_to_file, path
     j = json.loads(msg.payload)
     ps = PoseStamped()
     ps.header.stamp = rospy.Time.now()
@@ -57,6 +68,10 @@ def keys_callback(client, userdata, msg):
         ps.pose.orientation.z = location2z
         ps.pose.orientation.w = location2w
     keys_goal_pub.publish(ps)
+    if write_to_file:
+        with open(path+"keys.log", "ab+") as f:
+            dt = datetime.now()
+            f.write(j["object"] + "," + j["location"] + "," + datetime.today().strftime("%d-%m-%Y")+'_'+dt.strftime("%H%M%S%f")+"\n")
 
 
 def init():
@@ -65,6 +80,7 @@ def init():
     global keys_object_name, keys_location1, keys_location2
     global location1x, location1y, location1z, location1w
     global location2x, location2y, location2z, location2w
+    global write_to_file, path
 
     # ROS stuff
     rospy.init_node('room_status_publisher')
@@ -96,6 +112,11 @@ def init():
     timeout = rospy.get_param("~timeout", 60)
     username = rospy.get_param("~username", "application")
     password = rospy.get_param("~password", "@PpL3c@tI0n")
+    write_to_file = rospy.get_param("~write_to_file", False)
+
+    rospack = rospkg.RosPack()
+
+    path = rospack.get_path("room_status_publisher")+"/logs/"
 
     #ros_pub = rospy.Publisher(ptopic, RoomStatusMsg, queue_size=1)
 
